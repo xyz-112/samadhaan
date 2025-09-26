@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hackathon Login</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(270deg, #ff416c, #ff4b2b, #ff9f1c, #ff7eb3);
+      background-size: 800% 800%;
+      animation: bgShift 18s ease infinite;
+    }
+
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(18px);
+      border-radius: 20px;
+      padding: 40px;
+      width: 360px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      color: #333;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    .card h2 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      background: linear-gradient(90deg, #ff416c, #ff4b2b, #ff9f1c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .input-group {
+      position: relative;
+      margin: 14px 0;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 40px 12px 15px;
+      border: none;
+      border-radius: 12px;
+      outline: none;
+      font-size: 15px;
+      background: #fff;
+      color: #333;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.08);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .input-group input:focus {
+      box-shadow: 0 0 10px rgba(255, 75, 43, 0.6);
+    }
+
+    .input-group i {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #ff4b2b;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin: 12px 0;
+      border: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    .signup-btn {
+      background: linear-gradient(90deg, #ff9f1c, #ff416c);
+      color: white;
+    }
+
+    .login-btn {
+      background: linear-gradient(90deg, #1e3c72, #2a5298);
+      color: white;
+    }
+
+    #message {
+      margin-top: 14px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    #message.error { color: #ff4b2b; }
+    #message.success { color: #2a9d8f; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🚀 Hackathon Login</h2>
+
+    <div class="input-group">
+      <input type="email" id="email" placeholder="Email">
+    </div>
+
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Password">
+    </div>
+
+    <button class="signup-btn" onclick="signup()">Sign Up</button>
+    <button class="login-btn" onclick="login()">Login</button>
+
+    <p id="message"></p>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+     const firebaseConfig = {
+  apiKey: "AIzaSyDLkTX5_3WZaMlmCGLAbKtdWUA1D5PCICQ",
+  authDomain: "login-2f419.firebaseapp.com",
+  projectId: "login-2f419",
+  storageBucket: "login-2f419.firebasestorage.app",
+  messagingSenderId: "371310070731",
+  appId: "1:371310070731:web:4648237c8f96530d84044e",
+  measurementId: "G-FF132D487Z"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const passwordRule = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+    window.signup = function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      if (!passwordRule.test(password)) {
+        document.getElementById("message").innerText =
+          "❌ Password must be at least 8 chars, include 1 uppercase & 1 number.";
+        document.getElementById("message").className = "error";
+        return;
+      }
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          document.getElementById("message").innerText = "✅ User registered!";
+          document.getElementById("message").className = "success";
+        })
+        .catch(err => {
+          document.getElementById("message").innerText = err.message;
+          document.getElementById("message").className = "error";
+        });
+    }
+
+    window.login = function() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          document.getElementById("message").innerText = "✅ Login successful!";
+          document.getElementById("message").className = "success";
+          window.location.href = "index.html";
+        })
+        .catch(err => {
+          document.getElementById("message").innerText = err.message;
+          document.getElementById("message").className = "error";
+        });
+    }
+  </script>
+</body>
+</html>
