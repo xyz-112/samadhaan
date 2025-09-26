@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOS Emergency Support</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ffe4e1, #fff3f3);
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      color: #c62828;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 1.1rem;
+      margin: 10px 0;
+      color: #444;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      max-width: 500px;
+      margin: 0 auto;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    button {
+      background: linear-gradient(90deg, #e53935, #d32f2f);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 18px rgba(211,47,47,0.3);
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #c62828;
+    }
+    #mapLink {
+      margin-top: 15px;
+      display: block;
+      font-size: 1.1rem;
+      color: #1976d2;
+      text-decoration: none;
+    }
+    #mapLink:hover {
+      text-decoration: underline;
+    }
+    .helplines {
+      margin-top: 20px;
+      text-align: left;
+      font-size: 1rem;
+    }
+    .helplines h3 {
+      margin-bottom: 5px;
+      color: #c62828;
+    }
+    .helplines ul {
+      list-style: none;
+      padding: 0;
+    }
+    .helplines li {
+      padding: 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>🚨 SOS Emergency Support</h1>
+    <p>If you are in immediate danger, please call the emergency helpline.</p>
+
+    <!-- Main SOS Button -->
+    <button id="sosBtn">📞 Call Helpline & Share Location</button>
+
+    <!-- Status + Location -->
+    <p id="status"></p>
+    <a id="mapLink" target="_blank"></a>
+
+    <!-- Helpline Numbers -->
+    <div class="helplines">
+      <h3>Available Helplines:</h3>
+      <ul>
+        <li>Primary Helpline: <b id="primaryNum">+91 9589240920</b></li>
+        <li>Backup Helpline: <b id="backupNum">+91 8541099802</b></li>
+        <li>International Emergency: <b>112</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+     primaryNumber = "+919589240920// Replace with actual helpline
+     backupNumber  = "+918541099802";  // Backup helpline
+
+    document.getElementById("sosBtn").addEventListener("click", () => {
+      document.getElementById("status").innerText = "📞 Connecting to helpline & fetching location...";
+
+      // Redirect to dialer for primary number
+      window.location.href = `tel:${primaryNumber}`;
+
+      // Try to fetch location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            document.getElementById("status").innerText = `✅ Location captured! Share it if needed.`;
+            document.getElementById("mapLink").innerText = "📍 View My Location on Google Maps";
+            document.getElementById("mapLink").href = `https://www.google.com/maps?q=${lat},${lon}`;
+
+            // 👉 Optional: Send location to backend API
+            // fetch("https://your-server.com/api/location", {
+            //   method: "POST",
+            //   headers: { "Content-Type": "application/json" },
+            //   body: JSON.stringify({ latitude: lat, longitude: lon })
+            // });
+          },
+          (error) => {
+            document.getElementById("status").innerText = "⚠️ Unable to fetch location!";
+          }
+        );
+      } else {
+        document.getElementById("status").innerText = "❌ Geolocation not supported!";
+      }
+
+      // If no confirmation in 15s, redirect to backup helpline
+      setTimeout(() => {
+        let confirmed = confirm("Are you safe? Do you want us to connect to backup helpline?");
+        if (!confirmed) {
+          document.getElementById("status").innerText = "⚠️ Redirecting to backup helpline...";
+          window.location.href = `tel:${backupNumber}`;
+        }
+      }, 15000);
+    });
+  </script>
+
+</body>
+</html>
