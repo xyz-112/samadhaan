@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hackathon Login</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(270deg, #fff8dc, #fdf5e6, #ffe4b5, #f5deb3);
+      background-size: 800% 800%;
+      animation: bgShift 18s ease infinite;
+    }
+
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(18px);
+      border-radius: 20px;
+      padding: 40px;
+      width: 360px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      color: #333;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    .card h2 {
+      margin-bottom: 20px;
+      font-size: 28px;
+      background: linear-gradient(90deg, #ffb347, #ffcc33, #ffd700);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .input-group {
+      position: relative;
+      margin: 12px 0;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 8px 14px;   /* 🔹 reduced padding */
+      border: none;
+      border-radius: 8px;  /* 🔹 slightly smaller radius */
+      outline: none;
+      font-size: 14px;     /* 🔹 slightly smaller text */
+      background: #fffaf0;
+      color: #333;
+      box-shadow: inset 0 0 4px rgba(0,0,0,0.08);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .input-group input:focus {
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px; /* 🔹 made buttons consistent */
+      margin: 10px 0;
+      border: none;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    .signup-btn {
+      background: linear-gradient(90deg, #ffcc33, #ffb347);
+      color: white;
+    }
+
+    .login-btn {
+      background: linear-gradient(90deg, #ff7f50, #ff6f3c);
+      color: white;
+    }
+
+    #message {
+      margin-top: 14px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    #message.error { color: #ff4b2b; }
+    #message.success { color: #2a9d8f; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>🚀 Hackathon Login</h2>
+
+    <div class="input-group">
+      <input type="email" id="email" placeholder="Email">
+    </div>
+
+    <div class="input-group">
+      <input type="password" id="password" placeholder="Password">
+    </div>
+
+    <button class="signup-btn" onclick="signup()">Sign Up</button>
+    <button class="login-btn" onclick="login()">Login</button>
+
+    <p id="message"></p>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLkTX5_3WZaMlmCGLAbKtdWUA1D5PCICQ",
+      authDomain: "login-2f419.firebaseapp.com",
+      projectId: "login-2f419",
+      storageBucket: "login-2f419.firebasestorage.app",
+      messagingSenderId: "371310070731",
+      appId: "1:3713
