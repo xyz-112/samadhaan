@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mental Health Quiz</title>
+  <link rel="stylesheet" href="quiz.css">
+  <script src="quiz.js"></script>
+</head>
+<body>
+
+  <h1>🧠 Mental Health Self-Assessment Quiz</h1>
+  <form id="quizForm">
+    <!-- Questions -->
+    <div class="question">
+      <p>1. How often do you feel overwhelmed by your daily responsibilities?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q1" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>2. How often do you experience difficulty sleeping due to stress?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q2" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>3. How often do you feel anxious or worried without a clear reason?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q3" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>4. How frequently do you find it hard to concentrate?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q4" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>5. How often do you feel irritated or angry without major reasons?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q5" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>6. How often do you feel isolated or lonely?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q6" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>7. How frequently do you get physical symptoms like headaches or fatigue due to stress?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q7" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>8. How often do you feel a lack of motivation to do routine tasks?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q8" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>9. How often do you find yourself overthinking small issues?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q9" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p>10. How often do you feel hopeless about the future?</p>
+      <div class="scale">
+        <label>1</label><input type="range" name="q10" min="1" max="10" value="5"><label>10</label>
+      </div>
+    </div>
+
+    <button type="button" onclick="calculateScore()">Submit Quiz</button>
+    <div id="result"></div>
+  </form>
+
+  <script src="script.js"></script>
+</body>
+</html>
