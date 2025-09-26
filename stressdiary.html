@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stress Diary</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s linear;
+      background: linear-gradient(135deg, #a7c5eb, #fbc2eb);
+    }
+
+    .card {
+      width: 90%;
+      max-width: 750px;
+      background: #ffffffdd;
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.7s ease-in-out;
+      max-height: 95vh;
+      overflow-y: auto;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1f2937;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 14px;
+      display: block;
+      color: #374151;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      font-size: 16px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 6px rgba(37, 99, 235, 0.5);
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .slider-value {
+      display: inline-block;
+      font-size: 26px;
+      font-weight: bold;
+      margin-top: 6px;
+      transition: transform 0.2s ease;
+    }
+
+    .btn {
+      margin-top: 20px;
+      padding: 14px;
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+    }
+
+    .log {
+      margin-top: 20px;
+      padding: 16px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+
+    /* 📱 Responsive design for mobile */
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
+      .card {
+        padding: 16px;
+        border-radius: 16px;
+      }
+      h2 {
+        font-size: 20px;
+      }
+      input, select {
+        font-size: 14px;
+        padding: 8px;
+      }
+      .btn {
+        font-size: 16px;
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>📝 Stress Diary Entry</h2>
+
+    <label>Date</label>
+    <input type="date" id="date">
+
+    <label>Time</label>
+    <input type="time" id="time">
+
+    <label>Most Recent Stressful Event</label>
+    <input type="text" id="event" placeholder="e.g. 📚 Exam, 💼 Work Presentation">
+
+    <label>How Happy Do You Feel?</label>
+    <input type="range" id="happiness" min="0" max="10" value="5"
+           oninput="updateSlider(this,'happinessValue',['😭','😟','😐','🙂','😄'])">
+    <span id="happinessValue" class="slider-value">😐 5</span>
+
+    <label>Your Current Mood</label>
+    <select id="mood">
+      <option value="">-- Select Mood --</option>
+      <option>😟 Anxious</option>
+      <option>😌 Calm</option>
+      <option>😄 Happy</option>
+      <option>😫 Stressed</option>
+    </select>
+
+    <label>How Effectively Are You Working?</label>
+    <input type="range" id="effectiveness" min="0" max="10" value="5"
+           oninput="updateSlider(this,'effectivenessValue',['😴','😐','💪','🚀'])">
+    <span id="effectivenessValue" class="slider-value">💪 5</span>
+
+    <label>Fundamental Cause</label>
+    <input type="text" id="cause" placeholder="e.g. 👨‍💻 Boss, 🎓 Exams, 👪 Family">
+
+    <label>How Stressed Do You Feel?</label>
+    <input type="range" id="stress" min="0" max="10" value="5"
+           oninput="updateSlider(this,'stressValue',['😌','😟','😫','😭'])">
+    <span id="stressValue" class="slider-value">😟 5</span>
+
+    <label>Physical Symptoms</label>
+    <input type="text" id="symptoms" placeholder="e.g. 🤕 Headache, 😴 Fatigue">
+
+    <button class="btn" onclick="saveEntry()">💾 Save Entry</button>
+
+    <div id="log" class="log"></div>
+  </div>
+
+  <script>
+    const logDiv = document.getElementById("log");
+
+    // Auto-fill date & time
+    function updateDateTime() {
+      const now = new Date();
+      document.getElementById("date").value = now.toISOString().split("T")[0];
+      document.getElementById("time").value = now.toTimeString().slice(0,5);
+    }
+
+    // Interactive slider with emoji + size
+    function updateSlider(slider, spanId, emojis) {
+      const value = parseInt(slider.value);
+      let emoji = emojis[0];
+      if (value < 3) emoji = emojis[0];
+      else if (value < 5) emoji = emojis[1];
+      else if (value < 8) emoji = emojis[2];
+      else emoji = emojis[emojis.length-1];
+
+      const span = document.getElementById(spanId);
+      span.textContent = `${emoji} ${value}`;
+      span.style.transform = `scale(${1 + value/20})`; // grows with value
+    }
+
+    // Save entry to log
+    function saveEntry() {
+      const entry = {
+        date: document.getElementById("date").value,
+        time: document.getElementById("time").value,
+        event: document.getElementById("event").value,
+        happiness: document.getElementById("happiness").value,
+        mood: document.getElementById("mood").value,
+        effectiveness: document.getElementById("effectiveness").value,
+        cause: document.getElementById("cause").value,
+        stress: document.getElementById("stress").value,
+        symptoms: document.getElementById("symptoms").value
+      };
+
+      logDiv.innerHTML = `
+        <h3>✅ Last Saved Entry:</h3>
+        <p><strong>📅 Date:</strong> ${entry.date} ${entry.time}</p>
+        <p><strong>📝 Event:</strong> ${entry.event}</p>
+        <p><strong>🙂 Mood:</strong> ${entry.mood}</p>
+        <p><strong>😊 Happiness:</strong> ${entry.happiness}/10</p>
+        <p><strong>💪 Effectiveness:</strong> ${entry.effectiveness}/10</p>
+        <p><strong>⚡ Cause:</strong> ${entry.cause}</p>
+        <p><strong>😫 Stress:</strong> ${entry.stress}/10</p>
+        <p><strong>🤒 Symptoms:</strong> ${entry.symptoms}</p>
+      `;
+
+      updateDateTime();
+    }
+
+    // Desktop interactive background
+    document.body.addEventListener("mousemove", (e) => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      document.body.style.background =
+        `linear-gradient(135deg, 
+          hsl(${200 + x*100}, 70%, 70%), 
+          hsl(${300 + y*100}, 70%, 80%))`;
+    });
+
+    // Mobile touch interactive background
+    document.body.addEventListener("touchmove", (e) => {
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        const x = touch.clientX / window.innerWidth;
+        const y = touch.clientY / window.innerHeight;
+        document.body.style.background =
+          `linear-gradient(135deg, 
+            hsl(${200 + x*100}, 70%, 70%), 
+            hsl(${300 + y*100}, 70%, 80%))`;
+      }
+    });
+
+    updateDateTime();
+  </script>
+
+</body>
+</html>
