@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Stress Forecasting</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<style>
+  body {
+    margin:0; min-height:100vh; font-family:system-ui,Segoe UI,Roboto,Inter;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+    background:linear-gradient(135deg,#a7c5eb,#fbc2eb);
+    transition: background 1s ease; /* smooth color change */
+  }
+  .card {
+    width:min(820px,95vw); 
+    background:rgba(255,255,255,0.7);
+    border-radius:24px; padding:28px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.15);
+    backdrop-filter:blur(20px);
+    animation:fadeIn .7s ease;
+  }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+  h1 { margin:0 0 8px; font-size:28px; display:flex; align-items:center; gap:10px }
+  p.sub { margin:0 0 18px; color:#475569 }
+  .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center }
+  .field { flex:1 1 200px }
+  label { font-weight:600; font-size:14px }
+  input[type="date"], .pill, button {
+    height:46px; border-radius:14px; border:1px solid #e5e7eb;
+    padding:0 12px; font-size:15px; background:#fff;
+  }
+  .pill { display:flex; align-items:center; gap:10px }
+  .pill input[type="range"] { flex:1; appearance:none; height:6px; background:#e5e7eb; border-radius:999px }
+  .pill input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:20px; height:20px; border-radius:50%;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    border:2px solid #fff; box-shadow:0 3px 8px #0003;
+  }
+  .emoji { font-size:20px; width:28px; text-align:center; transition:transform .2s }
+  .btn {
+    background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff;
+    border:none; border-radius:14px; font-weight:600; cursor:pointer;
+    height:46px; padding:0 16px; transition:all .3s;
+  }
+  .btn:hover { transform:scale(1.05); box-shadow:0 6px 12px rgba(37,99,235,0.4) }
+  .btn.secondary { background:#fff; border:1px solid #e5e7eb; color:#0f172a }
+  .meta { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:16px; flex-wrap:wrap }
+  .trend { font-weight:700; padding:8px 14px; border-radius:999px; transition:background .5s,color .5s }
+  .canvas-wrap { margin-top:16px; background:#fff; border-radius:18px; padding:14px; border:1px solid #e5e7eb; min-height:280px }
+  .empty { text-align:center; padding:20px; color:#6b7280; font-weight:600 }
+  .toast {
+    position:fixed; bottom:30px; right:30px;
+    background:#16a34a; color:#fff; padding:12px 20px;
+    border-radius:14px; box-shadow:0 6px 16px #0003;
+    opacity:0; transform:translateY(20px); transition:all .4s;
+  }
+  .toast.show { opacity:1; transform:translateY(0) }
+
+  /* 📱 Mobile Optimizations */
+  @media(max-width:500px){
+    h1 { font-size:22px }
+    p.sub { font-size:14px }
+    .row { flex-direction:column; align-items:stretch }
+    .btn { width:100%; margin-top:8px }
+    .canvas-wrap { min-height:320px } /* taller chart on phone */
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>📊 Stress Forecasting</h1>
+    <p class="sub">Log your daily stress (0–10) and see your trends & forecast.</p>
+
+    <div class="row">
+      <div class="field">
+        <label for="date">Date</label>
+        <input type="date" id="date" />
+      </div>
+      <div class="field">
+        <label>Stress</label>
+        <div class="pill">
+          <span id="emo" class="emoji">😐</span>
+          <input type="range" id="score" min="0" max="10" value="5" />
+          <span id="val">5</span>
+        </div>
+      </div>
+      <div class="field">
+        <button class="btn" id="add">Add</button>
+        <button class="btn secondary" id="clear">Clear</button>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div id="trendBadge" class="trend" style="background:#eef2ff;color:#1e40af">➖ Stable</div>
+      <div id="avgLabel" style="color:#64748b;font-weight:600">Avg: —</div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="chart" height="260"></canvas>
+    </div>
+
+    <div class="empty" id="empty">No data yet. Add entries to see forecast.</div>
+  </main>
+
+  <div class="toast" id="toast">✅ Entry added!</div>
+
+<script>
+const key="stressData.v2"; const ctx=document.getElementById("chart").getContext("2d"); let chart;
+const $=id=>document.getElementById(id);
+
+// default date = today
+const d=new Date(); $("date").value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().split("T")[0];
+
+// slider emoji
+$("score").oninput=e=>{
+  const v=+e.target.value; $("val").textContent=v;
+  let face="😐"; if(v<=2) face="😌"; else if(v<=4) face="🙂"; else if(v<=6) face="😐"; else if(v<=8) face="😟"; else face="😭";
+  $("emo").textContent=face; $("emo").style.transform=`scale(${1+v/20})`;
+};
+
+// storage
+const load=()=>JSON.parse(localStorage.getItem(key)||"[]");
+const save=arr=>localStorage.setItem(key,JSON.stringify(arr));
+
+// regression
+function linreg(pts){
+  const n=pts.length; if(n<2) return{a:pts[0]?.y||0,b:0};
+  let sx=0,sy=0,sxy=0,sxx=0;
+  for(const p of pts){sx+=p.x; sy+=p.y; sxy+=p.x*p.y; sxx+=p.x*p.x;}
+  const b=(n*sxy-sx*sy)/(n*sxx-sx*sx||1); const a=(sy-b*sx)/n; return{a,b};
+}
+
+// moving average
+const moving=(arr,w=7)=>arr.map((_,i)=>arr.slice(Math.max(0,i-w+1),i+1).reduce((t,v)=>t+v,0)/(Math.min(w,i+1)));
+
+// toast
+function showToast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2000);
+}
+
+// render chart
+function render(){
+  const data=load().sort((a,b)=>a.date.localeCompare(b.date));
+  $("empty").style.display=data.length?"none":"block";
+  const labels=data.map(e=>e.date), scores=data.map(e=>e.score);
+  const pts=scores.map((y,i)=>({x:i,y})), {a,b}=linreg(pts);
+  const avg=scores.length?(scores.reduce((t,v)=>t+v,0)/scores.length).toFixed(1):"—";
+  $("avgLabel").textContent=`Avg: ${avg}`;
+  const badge=$("trendBadge");
+  if(b>0.05){ badge.textContent="📈 Rising"; badge.style.background="#dcfce7"; badge.style.color="#166534";}
+  else if(b<-0.05){ badge.textContent="📉 Falling"; badge.style.background="#fee2e2"; badge.style.color="#991b1b";}
+  else{ badge.textContent="➖ Stable"; badge.style.background="#eef2ff"; badge.style.color="#1e40af"; }
+
+  // forecast 7d
+  const forecastX=[...Array(7)].map((_,i)=>pts.length+i);
+  const forecastY=forecastX.map(x=>Math.max(0,Math.min(10,a+b*x)));
+  const forecastLabels=forecastX.map(i=>{
+    const base=new Date(labels.at(-1)||$("date").value);
+    base.setDate(base.getDate()+(i-pts.length+1));
+    return base.toISOString().split("T")[0];
+  });
+
+  const ma=moving(scores,7);
+  const allLabels=[...labels,...forecastLabels];
+  const gradient=ctx.createLinearGradient(0,0,0,260);
+  gradient.addColorStop(0,"rgba(37,99,235,0.4)");
+  gradient.addColorStop(1,"rgba(37,99,235,0)");
+
+  const ds=[
+    {label:"Stress",data:scores,borderColor:"#2563eb",backgroundColor:gradient,fill:true,tension:.35,pointRadius:5,
+      pointBackgroundColor:(ctx)=> ctx.dataIndex===scores.length-1?"#f59e0b":"#2563eb",
+      pointRadius:(ctx)=> ctx.dataIndex===scores.length-1?7:4},
+    {label:"7-day Avg",data:ma,borderColor:"#16a34a",borderDash:[6,4],pointRadius:0,tension:.35},
+    {label:"Forecast",data:[...Array(scores.length-1).fill(null),scores.at(-1),...forecastY],borderColor:"#f59e0b",borderDash:[4,6],pointRadius:0,tension:.35}
+  ];
+  if(chart) chart.destroy();
+  chart=new Chart(ctx,{type:"line",data:{labels:allLabels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},
+      plugins:{legend:{labels:{usePointStyle:true}}},scales:{y:{min:0,max:10}}}});
+}
+
+// add
+$("add").onclick=()=>{
+  const date=$("date").value, score=+$("score").value;
+  if(!date) return alert("Pick a date");
+  const arr=load().filter(e=>e.date!==date); arr.push({date,score});
+  save(arr); render(); showToast("✅ Entry added!");
+};
+// clear
+$("clear").onclick=()=>{ if(confirm("Clear all data?")){ save([]); render(); showToast("🗑️ Data cleared"); } };
+
+// animated background
+let hue=200;
+setInterval(()=>{
+  hue=(hue+1)%360;
+  document.body.style.background=`linear-gradient(135deg,hsl(${hue},70%,75%),hsl(${(hue+80)%360},70%,85%))`;
+},80);
+
+render();
+</script>
+</body>
+</html>
